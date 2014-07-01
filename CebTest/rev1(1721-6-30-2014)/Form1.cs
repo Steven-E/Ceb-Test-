@@ -23,6 +23,7 @@ namespace CebTest
         private bool dragging = false;
         private Point start;
         private string imgFLoc;
+        public boardPixel[,] markedReds;
 
         public Form1()
         {
@@ -46,6 +47,8 @@ namespace CebTest
 
                 int imgW = pictureBox1.Image.Width;
                 int imgH = pictureBox1.Image.Height;
+
+                markedReds = new boardPixel[imgW, imgH];
 
                 OrigSize = new Size(imgW, imgH);
 
@@ -162,7 +165,8 @@ namespace CebTest
         private void processImageButton_Click(object sender, EventArgs e)
         {
             Image tempImg = pictureBox1.Image;
-            Bitmap sImg = null;
+            Bitmap preProcImg = null;
+            Bitmap postProcImg = null;
             int thresh = default(int);
             string inputTVal;
             try
@@ -176,7 +180,13 @@ namespace CebTest
             
             if (tempImg != null)
             {
-                try{sImg = procImage(thresh, tempImg); sImg.Save(@"E:\Users\Steven\Downloads\Processed_img001.png"); }
+                try{
+                    preProcImg = procImage(thresh, tempImg); preProcImg.Save(@"E:\Users\Steven\Downloads\Pre-Process_Img01.png");
+                    postProcImg = getEvalArray2(3, 3, preProcImg); postProcImg.Save(@"E:\Users\Steven\Downloads\Post-Process_Img01.png");
+
+                    MessageBox.Show("Success!! Image has been processed and stored in folder!", "Alright there!");
+                    
+                }
                 catch (Exception ex){ MessageBox.Show(ex.Message); }                
             }
             else
@@ -188,7 +198,10 @@ namespace CebTest
         public struct boardPixel
         {
             private int wLoc, hLoc;
-            public boardPixel(int widthlocation, int heightlocation) {wLoc = widthlocation; hLoc = heightlocation;}             
+            private bool isFlagged;
+            public boardPixel(int widthlocation, int heightlocation, bool marked) { wLoc = widthlocation; hLoc = heightlocation; isFlagged = marked; }
+            public boardPixel(int widthlocation, int heightlocation) { wLoc = widthlocation; hLoc = heightlocation; isFlagged = false; }            
+            public bool MARK { get { return isFlagged; } set { isFlagged = value;} }
             public int WLOC{get{return wLoc;} set{wLoc = value;}}
             public int HLOC{get{return hLoc;} set{hLoc = value;}}        
         }
@@ -242,7 +255,7 @@ namespace CebTest
                     }
                 }
             }
-            printToFile(pBorders);
+            //printToFile(pBorders);
             return retImag2;
         }
 
@@ -251,8 +264,6 @@ namespace CebTest
 
             Color[] retArray;
 
-            //retArray = new Color[9];
-            //retArray[0] = srcPic.GetPixel(3, 4);
             try
             {
                 if (((currW >= 1) && (currH >= 1)) && (currW < OrigSize.Width - 1) && (currH < OrigSize.Height - 1)) // normal case(no sides/corners)
@@ -365,17 +376,76 @@ namespace CebTest
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "There was an error in the Color[] getEvalArray(int,int,BitMap) method!!");
-                //return retArray = default(Color []);
+
             }
             return retArray = default(Color[]);
         }
 
+        public Bitmap getEvalArray2(int currW, int currH, Bitmap srcPic) 
+        {
+            Bitmap shapeLocMap = new Bitmap(srcPic);
+           
+                for (int w = currW; w < srcPic.Width; w++)
+                {
+                    for (int h = currH; h < srcPic.Height; h++)
+                    {             
+                        
+                        Color currPixel = srcPic.GetPixel(w, h);
+
+                        if (markedReds[w, h].MARK == false && currPixel.R >= 240)
+                        {                            
+                            boardPixel potenShape = new boardPixel(w, h, true);
+                            
+                            boardPixel[] sizeArray = new boardPixel[4];
+
+                            sizeArray = shapeOutlineLocation(potenShape, srcPic);                            
+
+                            shapeTarRectDrawer(shapeLocMap, sizeArray);
+
+                            break;
+                        }
+
+                        
+                        //if (sizeArray[0].MARK && sizeArray[1].MARK && sizeArray[2].MARK && sizeArray[3].MARK)
+                        //{
+
+                        //}
+                    }
+                }
+            
+
+            return shapeLocMap;
+        } 
+
+        public Bitmap shapeTarRectDrawer(Bitmap inMap, boardPixel[] minMaxs) 
+        {            
+            Image tempImg = new Bitmap(inMap);
+
+            int topLW = minMaxs[3].WLOC;
+            int topLH = minMaxs[1].HLOC;
+            int recWidth = minMaxs[2].WLOC - minMaxs[3].WLOC;
+            int recHeight = minMaxs[0].HLOC - minMaxs[1].HLOC;
+
+            //System.Drawing.Graphics graphicsObj;
+
+            //graphicsObj = this.CreateGraphics();
+            
+            Pen drawer = new Pen(System.Drawing.Color.Red, 5);
+            Rectangle shapeRectLoc = new Rectangle(topLW, topLH, recWidth, recHeight);
+
+            using (Graphics g = Graphics.FromImage(tempImg)) 
+            {
+                g.DrawRectangle(drawer, shapeRectLoc);
+            }
+
+
+            return new Bitmap(tempImg);
+        }
+
         public Color[] getEvalArrayRightDown(int currW, int currH, Bitmap srcPic) 
         {
-            Color[] retArray;
-            
-            //retArray = new Color[9];
-            //retArray[0] = srcPic.GetPixel(3, 4);
+            Color[] retArray;       
+
             try
             {
                 if (((currW >= 1) && (currH >= 1)) && (currW < OrigSize.Width - 1) && (currH < OrigSize.Height - 1)) // normal case(no sides/corners)
@@ -469,7 +539,6 @@ namespace CebTest
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "There was an error in the Color[] getEvalArray(int,int,BitMap) method!!");
-                //return retArray = default(Color []);
             }
             return retArray = default(Color[]);           
         }
@@ -488,27 +557,79 @@ namespace CebTest
                 }
             }
             return isAboveThresh;
+        }        
+
+        public boardPixel[] shapeOutlineLocation(boardPixel firstRedFound, Bitmap srcPic) 
+        {
+            boardPixel[] minMaxLocArray = new boardPixel[4];
+            Queue<boardPixel> nextReds = new Queue<boardPixel>();
+            Bitmap shapelocation = new Bitmap(srcPic);
+
+            //element 0: max height 
+            //element 1: min height
+            //element 2: max width
+            //element 3: min width
+            for (int i=0; i < 4; i++) //setting initial min/max values based on first red found
+            {
+                minMaxLocArray[i].HLOC = firstRedFound.HLOC;
+                minMaxLocArray[i].WLOC = firstRedFound.WLOC;
+            }
+            firstRedFound.MARK= true;
+
+            nextReds.Enqueue(firstRedFound);
+
+            foreach ( boardPixel spot in nextReds)
+            {
+                int startW = spot.WLOC;
+                int startH = spot.HLOC;
+
+                for(int w = startW; w < startW +2; w++)
+                {
+                    for(int h =startH -1; h < startH +2; h ++)
+                    {
+                        Color evalC = srcPic.GetPixel(w, h);
+                        if (evalC.Equals(Color.Red)) 
+                        {
+
+                            if (!nextReds.Contains(new boardPixel(w, h, true)))      //checking to see if value is not already in queue. 
+                            {
+                                nextReds.Enqueue(new boardPixel(w, h, true));       //adding to queue. 
+                                if (h > minMaxLocArray[0].HLOC)
+                                    minMaxLocArray[0].HLOC = h; minMaxLocArray[0].WLOC = w;
+                                if( h < minMaxLocArray[0].HLOC)
+                                    minMaxLocArray[1].HLOC= h; minMaxLocArray[1].WLOC = w;
+                                if (w > minMaxLocArray[2].WLOC)
+                                    minMaxLocArray[2].HLOC = h; minMaxLocArray[2].WLOC = w;
+                                if (w < minMaxLocArray[3].WLOC)
+                                    minMaxLocArray[3].HLOC = h; minMaxLocArray[3].WLOC = w;
+
+
+                                markedReds[w, h].MARK = true;
+
+                            }
+
+                        }
+
+                    }
+                }
+
+                nextReds.Dequeue();
+            }            
+
+            return minMaxLocArray;
+        } 
+
+        public void printToFile(List<boardPixel> inList) 
+        {            
+            //string reportFileLoc = 
+            using (System.IO.StreamWriter file = new System.IO.StreamWriter(imgFLoc + "bMAP_Shape_locations.txt"))
+            {
+                foreach (boardPixel elem in inList)
+                {
+                    file.WriteLine(elem);
+                }
+            }
         }
-
-
-
-        //public int ToMyArgb(System.Drawing.Color color) 
-        //{
-        //    byte[] bytes = new byte[] { color.A, color.R, color.G, color.B };
-        //    return BitConverter.ToInt32(bytes, 0);
-        //}
-
-        //public void printToFile(List<boardPixel> inList) 
-        //{            
-        //    //string reportFileLoc = 
-        //    using (System.IO.StreamWriter file = new System.IO.StreamWriter(imgFLoc + "bMAP_Shape_locations.txt"))
-        //    {
-        //        foreach (boardPixel elem in inList)
-        //        {
-        //            file.WriteLine(elem);
-        //        }
-        //    }
-        //}
 
         
 
