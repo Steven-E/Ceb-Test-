@@ -498,17 +498,17 @@ namespace CebTest
         //    return BitConverter.ToInt32(bytes, 0);
         //}
 
-        public void printToFile(List<boardPixel> inList) 
-        {            
-            //string reportFileLoc = 
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(imgFLoc + "bMAP_Shape_locations.txt"))
-            {
-                foreach (boardPixel elem in inList)
-                {
-                    file.WriteLine(elem);
-                }
-            }
-        }
+        //public void printToFile(List<boardPixel> inList) 
+        //{            
+        //    //string reportFileLoc = 
+        //    using (System.IO.StreamWriter file = new System.IO.StreamWriter(imgFLoc + "bMAP_Shape_locations.txt"))
+        //    {
+        //        foreach (boardPixel elem in inList)
+        //        {
+        //            file.WriteLine(elem);
+        //        }
+        //    }
+        //}
 
         
 
