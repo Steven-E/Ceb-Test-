@@ -33,12 +33,13 @@
             this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.showButton = new System.Windows.Forms.Button();
             this.clearButton = new System.Windows.Forms.Button();
+            this.processImageButton = new System.Windows.Forms.Button();
             this.closeButton = new System.Windows.Forms.Button();
             this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
             this.zoomBar = new System.Windows.Forms.TrackBar();
             this.zoomUpDown = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
-            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.flowLayoutPanel1.SuspendLayout();
@@ -50,13 +51,14 @@
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 3;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.1991F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 63.8009F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 108F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 11.02941F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 88.97059F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
             this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.closeButton, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel2, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.progressBar1, 2, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -70,48 +72,61 @@
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tableLayoutPanel1.SetColumnSpan(this.pictureBox1, 2);
-            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.WaitCursor;
+            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.NoMove2D;
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(772, 410);
+            this.pictureBox1.Size = new System.Drawing.Size(810, 410);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.UseWaitCursor = true;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
+            this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
+            this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
             // 
             // flowLayoutPanel1
             // 
             this.flowLayoutPanel1.Controls.Add(this.showButton);
             this.flowLayoutPanel1.Controls.Add(this.clearButton);
+            this.flowLayoutPanel1.Controls.Add(this.processImageButton);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(284, 419);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(93, 419);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(491, 34);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(720, 34);
             this.flowLayoutPanel1.TabIndex = 2;
             // 
             // showButton
             // 
             this.showButton.AutoSize = true;
-            this.showButton.Location = new System.Drawing.Point(399, 3);
+            this.showButton.Location = new System.Drawing.Point(628, 3);
             this.showButton.Name = "showButton";
             this.showButton.Size = new System.Drawing.Size(89, 23);
             this.showButton.TabIndex = 0;
-            this.showButton.Text = "Show a Picture";
+            this.showButton.Text = "Select Image...";
             this.showButton.UseVisualStyleBackColor = true;
             this.showButton.Click += new System.EventHandler(this.showButton_Click);
             // 
             // clearButton
             // 
             this.clearButton.AutoSize = true;
-            this.clearButton.Location = new System.Drawing.Point(307, 3);
+            this.clearButton.Location = new System.Drawing.Point(536, 3);
             this.clearButton.Name = "clearButton";
             this.clearButton.Size = new System.Drawing.Size(86, 23);
             this.clearButton.TabIndex = 1;
             this.clearButton.Text = "Clear a Picture";
             this.clearButton.UseVisualStyleBackColor = true;
             this.clearButton.Click += new System.EventHandler(this.clearButton_Click);
+            // 
+            // processImageButton
+            // 
+            this.processImageButton.Location = new System.Drawing.Point(418, 3);
+            this.processImageButton.Name = "processImageButton";
+            this.processImageButton.Size = new System.Drawing.Size(112, 23);
+            this.processImageButton.TabIndex = 4;
+            this.processImageButton.Text = "Process Image...";
+            this.processImageButton.UseVisualStyleBackColor = true;
+            this.processImageButton.Click += new System.EventHandler(this.processImageButton_Click);
             // 
             // closeButton
             // 
@@ -130,9 +145,9 @@
             this.flowLayoutPanel2.Controls.Add(this.zoomUpDown);
             this.flowLayoutPanel2.Controls.Add(this.label1);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(781, 3);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(819, 3);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(103, 410);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(65, 410);
             this.flowLayoutPanel2.TabIndex = 3;
             // 
             // zoomBar
@@ -151,8 +166,8 @@
             // zoomUpDown
             // 
             this.zoomUpDown.AccessibleName = "";
-            this.zoomUpDown.AllowDrop = true;
             this.zoomUpDown.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.zoomUpDown.InterceptArrowKeys = false;
             this.zoomUpDown.Location = new System.Drawing.Point(3, 312);
             this.zoomUpDown.Maximum = new decimal(new int[] {
             200,
@@ -185,11 +200,15 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Zoom (%)";
             // 
-            // openFileDialog1
+            // progressBar1
             // 
-            this.openFileDialog1.FileName = "openFileDialog1";
-            this.openFileDialog1.Filter = "JPEG Files (*.jpg)|*.jpg|PNG Files (*.png)|*.png";
-            this.openFileDialog1.Title = "Select a picture file...";
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(819, 419);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(65, 34);
+            this.progressBar1.Step = 1;
+            this.progressBar1.TabIndex = 4;
+            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
             // 
             // Form1
             // 
@@ -198,7 +217,7 @@
             this.ClientSize = new System.Drawing.Size(887, 456);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "Form1";
-            this.Text = "Ceb - Test";
+            this.Text = "Cerberus Test -- Steven Etienne (rev .8.1)";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -221,11 +240,12 @@
         private System.Windows.Forms.Button showButton;
         private System.Windows.Forms.Button clearButton;
         private System.Windows.Forms.Button closeButton;
-        private System.Windows.Forms.OpenFileDialog openFileDialog1;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
         private System.Windows.Forms.TrackBar zoomBar;
         private System.Windows.Forms.NumericUpDown zoomUpDown;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Button processImageButton;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 
