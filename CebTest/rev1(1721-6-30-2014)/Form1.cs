@@ -23,7 +23,8 @@ namespace CebTest
         private bool dragging = false;
         private Point start;
         private string imgFLoc;
-        public boardPixel[,] markedReds;
+        public boardPixel[,] markedPossibleShaps;
+        List<ShapeLoc> shapeXYminMaxLocs;
 
         public Form1()
         {
@@ -198,10 +199,12 @@ namespace CebTest
         public struct boardPixel
         {
             private int wLoc, hLoc;
-            private bool isFlagged;
-            public boardPixel(int widthlocation, int heightlocation, bool marked) { wLoc = widthlocation; hLoc = heightlocation; isFlagged = marked; }
-            public boardPixel(int widthlocation, int heightlocation) { wLoc = widthlocation; hLoc = heightlocation; isFlagged = false; }            
-            public bool MARK { get { return isFlagged; } set { isFlagged = value;} }
+            private bool isFlaggedRed, isFlaggedBlue;
+            public boardPixel(int widthlocation, int heightlocation, bool markedRed, bool markedBlue) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = markedBlue; }
+            public boardPixel(int widthlocation, int heightlocation, bool markedRed) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = false; }
+            public boardPixel(int widthlocation, int heightlocation) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = false; isFlaggedBlue = false; }            
+            public bool MARKRED { get { return isFlaggedRed; } set { isFlaggedRed = value;} }
+            public bool MARKEDBLUE { get { return isFlaggedBlue; } set { isFlaggedBlue = value; } }
             public int WLOC{get{return wLoc;} set{wLoc = value;}}
             public int HLOC{get{return hLoc;} set{hLoc = value;}}        
         }
@@ -250,6 +253,7 @@ namespace CebTest
 
                     if (evalMe(retImag.GetPixel(w, h), evalArray, threshHoldDiff))
                     {
+                        markedPossibleShaps[w, h].MARKRED = true;
                         retImag2.SetPixel(w, h, Color.Red);
                         pBorders.Add(new boardPixel(w, h));
                     }
@@ -379,69 +383,8 @@ namespace CebTest
 
             }
             return retArray = default(Color[]);
-        }
-
-        public Bitmap getEvalArray2(int currW, int currH, Bitmap srcPic) 
-        {
-            Bitmap shapeLocMap = new Bitmap(srcPic);
-           
-                for (int w = currW; w < srcPic.Width; w++)
-                {
-                    for (int h = currH; h < srcPic.Height; h++)
-                    {             
-                        
-                        Color currPixel = srcPic.GetPixel(w, h);
-
-                        if (markedReds[w, h].MARK == false && currPixel.R >= 240)
-                        {                            
-                            boardPixel potenShape = new boardPixel(w, h, true);
-                            
-                            boardPixel[] sizeArray = new boardPixel[4];
-
-                            sizeArray = shapeOutlineLocation(potenShape, srcPic);                            
-
-                            shapeTarRectDrawer(shapeLocMap, sizeArray);
-
-                            break;
-                        }
-
-                        
-                        //if (sizeArray[0].MARK && sizeArray[1].MARK && sizeArray[2].MARK && sizeArray[3].MARK)
-                        //{
-
-                        //}
-                    }
-                }
-            
-
-            return shapeLocMap;
-        } 
-
-        public Bitmap shapeTarRectDrawer(Bitmap inMap, boardPixel[] minMaxs) 
-        {            
-            Image tempImg = new Bitmap(inMap);
-
-            int topLW = minMaxs[3].WLOC;
-            int topLH = minMaxs[1].HLOC;
-            int recWidth = minMaxs[2].WLOC - minMaxs[3].WLOC;
-            int recHeight = minMaxs[0].HLOC - minMaxs[1].HLOC;
-
-            //System.Drawing.Graphics graphicsObj;
-
-            //graphicsObj = this.CreateGraphics();
-            
-            Pen drawer = new Pen(System.Drawing.Color.Red, 5);
-            Rectangle shapeRectLoc = new Rectangle(topLW, topLH, recWidth, recHeight);
-
-            using (Graphics g = Graphics.FromImage(tempImg)) 
-            {
-                g.DrawRectangle(drawer, shapeRectLoc);
-            }
-
-
-            return new Bitmap(tempImg);
-        }
-
+        }    
+        
         public Color[] getEvalArrayRightDown(int currW, int currH, Bitmap srcPic) 
         {
             Color[] retArray;       
@@ -557,67 +500,152 @@ namespace CebTest
                 }
             }
             return isAboveThresh;
-        }        
+        }
 
-        public boardPixel[] shapeOutlineLocation(boardPixel firstRedFound, Bitmap srcPic) 
+        public struct ShapeLoc 
         {
-            boardPixel[] minMaxLocArray = new boardPixel[4];
-            Queue<boardPixel> nextReds = new Queue<boardPixel>();
-            Bitmap shapelocation = new Bitmap(srcPic);
+            public int minW, minH, maxW, maxH;
+            public boardPixel minPW, minPH, maxPW, maxPH;
+        }
 
-            //element 0: max height 
-            //element 1: min height
-            //element 2: max width
-            //element 3: min width
-            for (int i=0; i < 4; i++) //setting initial min/max values based on first red found
+        public Bitmap findShapes(Bitmap processedImg)
+        {
+
+            Bitmap pImageTemp = processedImg;     
+
+            for (int pIW = 2; pIW < OrigSize.Width - 3; pIW++) 
             {
-                minMaxLocArray[i].HLOC = firstRedFound.HLOC;
-                minMaxLocArray[i].WLOC = firstRedFound.WLOC;
-            }
-            firstRedFound.MARK= true;
-
-            nextReds.Enqueue(firstRedFound);
-
-            foreach ( boardPixel spot in nextReds)
-            {
-                int startW = spot.WLOC;
-                int startH = spot.HLOC;
-
-                for(int w = startW; w < startW +2; w++)
+                for (int pIH = 3; pIH < OrigSize.Height - 3; pIH++) 
                 {
-                    for(int h =startH -1; h < startH +2; h ++)
+                    if (markedPossibleShaps[pIW, pIH].MARKRED && !markedPossibleShaps[pIW, pIH].MARKEDBLUE) 
                     {
-                        Color evalC = srcPic.GetPixel(w, h);
-                        if (evalC.Equals(Color.Red)) 
+                        Queue<boardPixel> someQueue = new Queue<boardPixel>();
+                        markedPossibleShaps[pIW, pIH].MARKEDBLUE = true;
+                        someQueue.Enqueue(markedPossibleShaps[pIW, pIH]);
+                        //creating new shape bounds based on first red
+                        ShapeLoc newShape = new ShapeLoc
                         {
+                            minW = pIW,
+                            minH = pIH,
+                            maxW = pIW,
+                            maxH = pIH,
+                            maxPH = markedPossibleShaps[pIW, pIH],
+                            minPH = markedPossibleShaps[pIW, pIH],
+                            maxPW = markedPossibleShaps[pIW, pIH],
+                            minPW = markedPossibleShaps[pIW, pIH]
+                        };
 
-                            if (!nextReds.Contains(new boardPixel(w, h, true)))      //checking to see if value is not already in queue. 
-                            {
-                                nextReds.Enqueue(new boardPixel(w, h, true));       //adding to queue. 
-                                if (h > minMaxLocArray[0].HLOC)
-                                    minMaxLocArray[0].HLOC = h; minMaxLocArray[0].WLOC = w;
-                                if( h < minMaxLocArray[0].HLOC)
-                                    minMaxLocArray[1].HLOC= h; minMaxLocArray[1].WLOC = w;
-                                if (w > minMaxLocArray[2].WLOC)
-                                    minMaxLocArray[2].HLOC = h; minMaxLocArray[2].WLOC = w;
-                                if (w < minMaxLocArray[3].WLOC)
-                                    minMaxLocArray[3].HLOC = h; minMaxLocArray[3].WLOC = w;
+                        while (someQueue.Any()) 
+                        {
+                            //getting pixel from somequeue holding values
+                            boardPixel currPixel = someQueue.Dequeue();
+                            //setting min/max based if pixel in shape has smaller/larger value
+                            if (currPixel.WLOC > newShape.maxW) { newShape.maxW = currPixel.WLOC; newShape.maxPW = currPixel; }
+                            if (currPixel.WLOC < newShape.minW) { newShape.minW = currPixel.WLOC; newShape.minPW = currPixel; }
+                            if (currPixel.HLOC > newShape.maxH) { newShape.maxH = currPixel.HLOC; newShape.maxPH = currPixel; }
+                            if (currPixel.HLOC < newShape.minH) { newShape.minH = currPixel.HLOC; newShape.minPH = currPixel; }
 
-
-                                markedReds[w, h].MARK = true;
-
-                            }
-
+                            findShapeMinMaxClockwise(currPixel.WLOC, currPixel.HLOC, someQueue);           
                         }
 
+                        shapeXYminMaxLocs.Add(newShape);
                     }
                 }
+            }
 
-                nextReds.Dequeue();
-            }            
+            while (shapeXYminMaxLocs.Any()) 
+            {
+                pImageTemp = shapeTarRectDrawer(pImageTemp);
+                shapeXYminMaxLocs.RemoveAt(0);
+            }
 
-            return minMaxLocArray;
-        } 
+            return pImageTemp;
+        }
+
+        //check if location passed is inside bounds
+        public bool checkPixel(int w, int h) 
+        {
+            return w > 1 &&
+                w < OrigSize.Width - 2 &&
+               h > 1 &&
+               h < OrigSize.Height - 2 &&
+                markedPossibleShaps[w, h].MARKRED &&
+                !markedPossibleShaps[w, h].MARKEDBLUE;
+        }        
+
+        //searching clockwise direction for other marked red pixels
+        //if found marking blue
+        public void findShapeMinMaxClockwise(int inW, int inH,  Queue<boardPixel> sQueue)
+        {
+            if (checkPixel(inW + 1, inH)) 
+            {
+                markedPossibleShaps[inW + 1, inH].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW +1,inH]);
+            }
+
+            if (checkPixel(inW +1 , inH +1))
+            {
+                markedPossibleShaps[inW + 1, inH +1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW + 1, inH + 1]);
+            }
+
+            if (checkPixel(inW , inH + 1))
+            {
+                markedPossibleShaps[inW, inH + 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW , inH + 1]);
+            }
+
+            if (checkPixel(inW - 1, inH + 1))
+            {
+                markedPossibleShaps[inW - 1, inH + 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH + 1]);
+            }
+
+            if (checkPixel(inW - 1, inH))
+            {
+                markedPossibleShaps[inW - 1, inH + 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH]);
+            }
+
+            if (checkPixel(inW - 1, inH - 1))
+            {
+                markedPossibleShaps[inW - 1, inH - 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH - 1]);
+            }
+
+            if (checkPixel(inW , inH - 1))
+            {
+                markedPossibleShaps[inW, inH - 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW , inH - 1]);
+            }
+
+            if (checkPixel(inW + 1, inH - 1))
+            {
+                markedPossibleShaps[inW + 1, inH - 1].MARKEDBLUE = true;
+                sQueue.Enqueue(markedPossibleShaps[inW + 1, inH - 1]);
+            }
+
+
+        }
+
+       //retangle drawer
+        public Bitmap shapeTarRectDrawer(Bitmap inMap)
+        {
+            Image tempImg = new Bitmap(inMap);
+            ShapeLoc currShape = shapeXYminMaxLocs.First();
+
+            Pen drawer = new Pen(System.Drawing.Color.Red, 5);
+            //Rectangle shapeRectLoc = new Rectangle(topLW, topLH, recWidth, recHeight);
+
+            Rectangle shapeRectLoc = new Rectangle(currShape.minW, currShape.minH, currShape.maxW - currShape.minW , currShape.maxH - currShape.minH);
+
+            using (Graphics g = Graphics.FromImage(tempImg))
+            {
+                g.DrawRectangle(drawer, shapeRectLoc);
+            }
+            return new Bitmap(tempImg);
+        }
+
 
         public void printToFile(List<boardPixel> inList) 
         {            
