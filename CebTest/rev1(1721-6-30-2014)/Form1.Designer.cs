@@ -39,6 +39,7 @@
             this.zoomBar = new System.Windows.Forms.TrackBar();
             this.zoomUpDown = new System.Windows.Forms.NumericUpDown();
             this.label1 = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.flowLayoutPanel1.SuspendLayout();
@@ -50,13 +51,14 @@
             // tableLayoutPanel1
             // 
             this.tableLayoutPanel1.ColumnCount = 3;
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.1991F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 63.8009F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 11.02941F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 88.97059F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
             this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.closeButton, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel2, 2, 0);
+            this.tableLayoutPanel1.Controls.Add(this.progressBar1, 2, 1);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
@@ -70,7 +72,7 @@
             // 
             this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.tableLayoutPanel1.SetColumnSpan(this.pictureBox1, 2);
-            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.NoMove2D;
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
@@ -89,15 +91,15 @@
             this.flowLayoutPanel1.Controls.Add(this.processImageButton);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(298, 419);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(93, 419);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(515, 34);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(720, 34);
             this.flowLayoutPanel1.TabIndex = 2;
             // 
             // showButton
             // 
             this.showButton.AutoSize = true;
-            this.showButton.Location = new System.Drawing.Point(423, 3);
+            this.showButton.Location = new System.Drawing.Point(628, 3);
             this.showButton.Name = "showButton";
             this.showButton.Size = new System.Drawing.Size(89, 23);
             this.showButton.TabIndex = 0;
@@ -108,7 +110,7 @@
             // clearButton
             // 
             this.clearButton.AutoSize = true;
-            this.clearButton.Location = new System.Drawing.Point(331, 3);
+            this.clearButton.Location = new System.Drawing.Point(536, 3);
             this.clearButton.Name = "clearButton";
             this.clearButton.Size = new System.Drawing.Size(86, 23);
             this.clearButton.TabIndex = 1;
@@ -118,7 +120,7 @@
             // 
             // processImageButton
             // 
-            this.processImageButton.Location = new System.Drawing.Point(213, 3);
+            this.processImageButton.Location = new System.Drawing.Point(418, 3);
             this.processImageButton.Name = "processImageButton";
             this.processImageButton.Size = new System.Drawing.Size(112, 23);
             this.processImageButton.TabIndex = 4;
@@ -198,6 +200,16 @@
             this.label1.TabIndex = 2;
             this.label1.Text = "Zoom (%)";
             // 
+            // progressBar1
+            // 
+            this.progressBar1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.progressBar1.Location = new System.Drawing.Point(819, 419);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(65, 34);
+            this.progressBar1.Step = 1;
+            this.progressBar1.TabIndex = 4;
+            this.progressBar1.Click += new System.EventHandler(this.progressBar1_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -205,7 +217,7 @@
             this.ClientSize = new System.Drawing.Size(887, 456);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Name = "Form1";
-            this.Text = "Ceb - Test";
+            this.Text = "Cerberus Test -- Steven Etienne (rev .8.1)";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
@@ -233,6 +245,7 @@
         private System.Windows.Forms.NumericUpDown zoomUpDown;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button processImageButton;
+        private System.Windows.Forms.ProgressBar progressBar1;
     }
 }
 

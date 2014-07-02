@@ -10,7 +10,7 @@
  *              Allows user to Zoom/Pan image.
  *              Allows user to clear existing image.
  *              
- * @version: 0.8 7/2/2014
+ * @version: 0.8.1 7/2/2014
  */
 
 using System;
@@ -140,7 +140,7 @@ namespace CebTest
             imgFLoc = "";
             destFLoc = "";
             markedPossibleShaps= new boardPixel[0,0];
-            if(shapeXYminMaxLocs.Any()){shapeXYminMaxLocs.Clear();}
+            shapeXYminMaxLocs = new List<ShapeLoc>();
         }
 
         private void closeButton_Click(object sender, EventArgs e)
@@ -174,12 +174,18 @@ namespace CebTest
             if (int.TryParse(inputTVal, out thresh) && thresh >= 1 && thresh <= 255)
             {
                 procImage(thresh, tempImg, allChn);
-
+                progressBar1.PerformStep();
                 if (tempImg != null)
                 {
                     createNewFolder();
                     preProcImg = procImage(thresh, tempImg, allChn); preProcImg.Save(@"" + destFLoc + @"\Pre-Process_Img01.png");
                     postProcImg = findShapes(preProcImg); postProcImg.Save(destFLoc + @"\Post-Process_Img01.png");
+
+                    if (progressBar1.Value < progressBar1.Maximum)
+                    {
+
+                        for (int i = progressBar1.Value; i < progressBar1.Maximum; i++) { progressBar1.PerformStep(); }
+                    }
 
                     MessageBox.Show("Success!! Image has been processed and stored in folder!", "Alright there!");
                 }
@@ -190,6 +196,11 @@ namespace CebTest
 
         private void processImageButton_Click(object sender, EventArgs e)
         {
+
+            progressBar1.Maximum = 150000;
+            progressBar1.Value = 0;
+            progressBar1.Step = 1;
+            progressBar1.PerformStep();
             if (pictureBox1.Image == null)
             {
                 MessageBox.Show("You haven't selected an image yet...", "Hold on there!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -247,7 +258,8 @@ namespace CebTest
                     if (evalMe(retImag.GetPixel(w, h), evalArray, threshHoldDiff, allChan))
                     {
                         markedPossibleShaps[w, h].MARKRED = true;
-                        retImag2.SetPixel(w, h, Color.Red);              
+                        retImag2.SetPixel(w, h, Color.Red);
+                        progressBar1.PerformStep();
                     }
                 }
             }            
@@ -258,6 +270,7 @@ namespace CebTest
         public Color[] getEvalArray(int currW, int currH, Bitmap srcPic)
         {
             Color[] retArray;
+            progressBar1.PerformStep();
 
             if (((currW >= 1) && (currH >= 1)) && (currW < OrigSize.Width - 1) && (currH < OrigSize.Height - 1)) // normal case(no sides/corners)
             {
@@ -472,7 +485,7 @@ namespace CebTest
         {
             bool isAboveThresh = false;
             int thresh = threshHoldDiff;
-
+            progressBar1.PerformStep();
             if (allChan)
             {
                 for (int i = 0; !isAboveThresh && i < threshPixels.Length; i++)
@@ -540,6 +553,8 @@ namespace CebTest
                             if (currPixel.HLOC < newShape.minH) { newShape.minH = currPixel.HLOC; newShape.minPH = currPixel; }
 
                             findShapeMinMaxClockwise(currPixel.WLOC, currPixel.HLOC, someQueue);
+
+                            progressBar1.PerformStep();
                         }
                         shapeXYminMaxLocs.Add(newShape);
                     }
@@ -622,6 +637,7 @@ namespace CebTest
                     markedPossibleShaps[inW + 1, inH - 1].MARKEDBLUE = true;
                     sQueue.Enqueue(markedPossibleShaps[inW + 1, inH - 1]);
                 }
+                progressBar1.PerformStep();
         }
 
        //retangle drawer
@@ -637,6 +653,7 @@ namespace CebTest
             {
                 g.DrawRectangle(drawer, shapeRectLoc);
                 g.DrawString("" + sNum, new Font("Arial", 9), Brushes.Blue, new Point(currShape.minW + 3, currShape.minH + 3));
+                progressBar1.PerformStep();
             }            
         }
 
@@ -656,6 +673,8 @@ namespace CebTest
                     file.WriteLine("\nMax Height Location: " + shape.minH);
                     file.WriteLine("\n(=============================)\n\n");
                     num++;
+
+                    progressBar1.PerformStep();
                 }
             }
         }
@@ -695,6 +714,11 @@ namespace CebTest
                 e.Graphics.Clear(Color.Transparent);
                 e.Graphics.DrawImage(pictureBox1.Image, target);
             }
+        }
+
+        private void progressBar1_Click(object sender, EventArgs e)
+        {
+
         }
 
 
