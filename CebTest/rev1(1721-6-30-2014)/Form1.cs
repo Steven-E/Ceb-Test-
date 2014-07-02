@@ -49,8 +49,19 @@ namespace CebTest
                 int imgW = pictureBox1.Image.Width;
                 int imgH = pictureBox1.Image.Height;
 
-                markedReds = new boardPixel[imgW, imgH];
+                
+                markedPossibleShaps = new boardPixel[imgW, imgH];
 
+                for (int w = 0; w < imgW; w++) 
+                {
+                    for (int h = 0; h < imgH; h++) 
+                    {
+                        markedPossibleShaps[w, h] = new boardPixel { 
+                            WLOC = w, HLOC = h,
+                            MARKEDBLUE = false, MARKRED = false
+                        };
+                    }
+                }
                 OrigSize = new Size(imgW, imgH);
 
                 string tFn = openImage.FileName;
@@ -59,8 +70,8 @@ namespace CebTest
                 {
                     imgFLoc = Path.GetDirectoryName(tFn);
                 }
-            }       
-     
+            }
+            shapeXYminMaxLocs = new List<ShapeLoc>();
             
         }
 
@@ -170,25 +181,22 @@ namespace CebTest
             Bitmap postProcImg = null;
             int thresh = default(int);
             string inputTVal;
-            try
-            {
+
                 inputTVal = Microsoft.VisualBasic.Interaction.InputBox("Input a threshhold value:", "Gimmie input!", "15");
                 thresh = Convert.ToInt32(inputTVal);
 
                 procImage(thresh, tempImg);
-            }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+
             
             if (tempImg != null)
             {
-                try{
+
                     preProcImg = procImage(thresh, tempImg); preProcImg.Save(@"E:\Users\Steven\Downloads\Pre-Process_Img01.png");
-                    postProcImg = getEvalArray2(3, 3, preProcImg); postProcImg.Save(@"E:\Users\Steven\Downloads\Post-Process_Img01.png");
+                    postProcImg =findShapes( preProcImg); postProcImg.Save(@"E:\Users\Steven\Downloads\Post-Process_Img01.png");
 
                     MessageBox.Show("Success!! Image has been processed and stored in folder!", "Alright there!");
                     
-                }
-                catch (Exception ex){ MessageBox.Show(ex.Message); }                
+ 
             }
             else
             {
@@ -196,13 +204,14 @@ namespace CebTest
             }            
         }
 
-        public struct boardPixel
+        public class boardPixel
         {
             private int wLoc, hLoc;
             private bool isFlaggedRed, isFlaggedBlue;
-            public boardPixel(int widthlocation, int heightlocation, bool markedRed, bool markedBlue) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = markedBlue; }
-            public boardPixel(int widthlocation, int heightlocation, bool markedRed) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = false; }
-            public boardPixel(int widthlocation, int heightlocation) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = false; isFlaggedBlue = false; }            
+
+            //public boardPixel(int widthlocation, int heightlocation, bool markedRed, bool markedBlue) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = markedBlue; }
+            //public boardPixel(int widthlocation, int heightlocation, bool markedRed) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = markedRed; isFlaggedBlue = false; }
+            //public boardPixel(int widthlocation, int heightlocation) { wLoc = widthlocation; hLoc = heightlocation; isFlaggedRed = false; isFlaggedBlue = false; }            
             public bool MARKRED { get { return isFlaggedRed; } set { isFlaggedRed = value;} }
             public bool MARKEDBLUE { get { return isFlaggedBlue; } set { isFlaggedBlue = value; } }
             public int WLOC{get{return wLoc;} set{wLoc = value;}}
@@ -241,7 +250,7 @@ namespace CebTest
             //int maxWidth = retImag.Width;
             //int maxHeight = retImag.Height;
             
-            List<boardPixel> pBorders = new List<boardPixel>();
+            //List<boardPixel> pBorders = new List<boardPixel>();
 
             for (int w = 0; w < OrigSize.Width; w++)
             {
@@ -255,7 +264,7 @@ namespace CebTest
                     {
                         markedPossibleShaps[w, h].MARKRED = true;
                         retImag2.SetPixel(w, h, Color.Red);
-                        pBorders.Add(new boardPixel(w, h));
+              //          pBorders.Add(new boardPixel(w, h));
                     }
                 }
             }
@@ -268,8 +277,7 @@ namespace CebTest
 
             Color[] retArray;
 
-            try
-            {
+           
                 if (((currW >= 1) && (currH >= 1)) && (currW < OrigSize.Width - 1) && (currH < OrigSize.Height - 1)) // normal case(no sides/corners)
                 {
                     int rASize = 9;
@@ -376,12 +384,8 @@ namespace CebTest
 
                     return retArray;
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "There was an error in the Color[] getEvalArray(int,int,BitMap) method!!");
 
-            }
+
             return retArray = default(Color[]);
         }    
         
@@ -389,8 +393,7 @@ namespace CebTest
         {
             Color[] retArray;       
 
-            try
-            {
+
                 if (((currW >= 1) && (currH >= 1)) && (currW < OrigSize.Width - 1) && (currH < OrigSize.Height - 1)) // normal case(no sides/corners)
                 {
                     int rASize = 2;
@@ -478,11 +481,8 @@ namespace CebTest
 
                     return retArray;
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "There was an error in the Color[] getEvalArray(int,int,BitMap) method!!");
-            }
+         
+
             return retArray = default(Color[]);           
         }
 
@@ -502,7 +502,7 @@ namespace CebTest
             return isAboveThresh;
         }
 
-        public struct ShapeLoc 
+        public class ShapeLoc 
         {
             public int minW, minH, maxW, maxH;
             public boardPixel minPW, minPH, maxPW, maxPH;
@@ -510,52 +510,53 @@ namespace CebTest
 
         public Bitmap findShapes(Bitmap processedImg)
         {
-
-            Bitmap pImageTemp = processedImg;     
-
-            for (int pIW = 2; pIW < OrigSize.Width - 3; pIW++) 
-            {
-                for (int pIH = 3; pIH < OrigSize.Height - 3; pIH++) 
+            
+            Bitmap pImageTemp = processedImg;
+          
+                for (int pIW = 2; pIW < OrigSize.Width - 3; pIW++)
                 {
-                    if (markedPossibleShaps[pIW, pIH].MARKRED && !markedPossibleShaps[pIW, pIH].MARKEDBLUE) 
+                    for (int pIH = 3; pIH < OrigSize.Height - 3; pIH++)
                     {
-                        Queue<boardPixel> someQueue = new Queue<boardPixel>();
-                        markedPossibleShaps[pIW, pIH].MARKEDBLUE = true;
-                        someQueue.Enqueue(markedPossibleShaps[pIW, pIH]);
-                        //creating new shape bounds based on first red
-                        ShapeLoc newShape = new ShapeLoc
+                        if (markedPossibleShaps[pIW, pIH].MARKRED && !markedPossibleShaps[pIW, pIH].MARKEDBLUE)
                         {
-                            minW = pIW,
-                            minH = pIH,
-                            maxW = pIW,
-                            maxH = pIH,
-                            maxPH = markedPossibleShaps[pIW, pIH],
-                            minPH = markedPossibleShaps[pIW, pIH],
-                            maxPW = markedPossibleShaps[pIW, pIH],
-                            minPW = markedPossibleShaps[pIW, pIH]
-                        };
+                            Queue<boardPixel> someQueue = new Queue<boardPixel>();
+                            markedPossibleShaps[pIW, pIH].MARKEDBLUE = true;
+                            someQueue.Enqueue(markedPossibleShaps[pIW, pIH]);
+                            //creating new shape bounds based on first red
+                            ShapeLoc newShape = new ShapeLoc
+                            {
+                                minW = pIW,
+                                minH = pIH,
+                                maxW = pIW,
+                                maxH = pIH,
+                                maxPH = markedPossibleShaps[pIW, pIH],
+                                minPH = markedPossibleShaps[pIW, pIH],
+                                maxPW = markedPossibleShaps[pIW, pIH],
+                                minPW = markedPossibleShaps[pIW, pIH]
+                            };
 
-                        while (someQueue.Any()) 
-                        {
-                            //getting pixel from somequeue holding values
-                            boardPixel currPixel = someQueue.Dequeue();
-                            //setting min/max based if pixel in shape has smaller/larger value
-                            if (currPixel.WLOC > newShape.maxW) { newShape.maxW = currPixel.WLOC; newShape.maxPW = currPixel; }
-                            if (currPixel.WLOC < newShape.minW) { newShape.minW = currPixel.WLOC; newShape.minPW = currPixel; }
-                            if (currPixel.HLOC > newShape.maxH) { newShape.maxH = currPixel.HLOC; newShape.maxPH = currPixel; }
-                            if (currPixel.HLOC < newShape.minH) { newShape.minH = currPixel.HLOC; newShape.minPH = currPixel; }
+                            while (someQueue.Any())
+                            {
+                                //getting pixel from somequeue holding values
+                                boardPixel currPixel = someQueue.Dequeue();
+                                //setting min/max based if pixel in shape has smaller/larger value
+                                if (currPixel.WLOC > newShape.maxW) { newShape.maxW = currPixel.WLOC; newShape.maxPW = currPixel; }
+                                if (currPixel.WLOC < newShape.minW) { newShape.minW = currPixel.WLOC; newShape.minPW = currPixel; }
+                                if (currPixel.HLOC > newShape.maxH) { newShape.maxH = currPixel.HLOC; newShape.maxPH = currPixel; }
+                                if (currPixel.HLOC < newShape.minH) { newShape.minH = currPixel.HLOC; newShape.minPH = currPixel; }
 
-                            findShapeMinMaxClockwise(currPixel.WLOC, currPixel.HLOC, someQueue);           
+                                findShapeMinMaxClockwise(currPixel.WLOC, currPixel.HLOC, someQueue);
+                            }
+
+                            shapeXYminMaxLocs.Add(newShape);
                         }
-
-                        shapeXYminMaxLocs.Add(newShape);
                     }
                 }
-            }
+
 
             while (shapeXYminMaxLocs.Any()) 
             {
-                pImageTemp = shapeTarRectDrawer(pImageTemp);
+                shapeTarRectDrawer(pImageTemp);
                 shapeXYminMaxLocs.RemoveAt(0);
             }
 
@@ -565,85 +566,87 @@ namespace CebTest
         //check if location passed is inside bounds
         public bool checkPixel(int w, int h) 
         {
-            return w > 1 &&
-                w < OrigSize.Width - 2 &&
-               h > 1 &&
-               h < OrigSize.Height - 2 &&
-                markedPossibleShaps[w, h].MARKRED &&
-                !markedPossibleShaps[w, h].MARKEDBLUE;
+                return w > 1 &&
+                    w < OrigSize.Width - 2 &&
+                   h > 1 &&
+                   h < OrigSize.Height - 2 &&
+                    markedPossibleShaps[w, h].MARKRED &&
+                    !markedPossibleShaps[w, h].MARKEDBLUE;
+         
         }        
 
         //searching clockwise direction for other marked red pixels
         //if found marking blue
         public void findShapeMinMaxClockwise(int inW, int inH,  Queue<boardPixel> sQueue)
         {
-            if (checkPixel(inW + 1, inH)) 
-            {
-                markedPossibleShaps[inW + 1, inH].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW +1,inH]);
-            }
 
-            if (checkPixel(inW +1 , inH +1))
-            {
-                markedPossibleShaps[inW + 1, inH +1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW + 1, inH + 1]);
-            }
+                if (checkPixel(inW + 1, inH))
+                {
+                    markedPossibleShaps[inW + 1, inH].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW + 1, inH]);
+                }
 
-            if (checkPixel(inW , inH + 1))
-            {
-                markedPossibleShaps[inW, inH + 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW , inH + 1]);
-            }
+                if (checkPixel(inW + 1, inH + 1))
+                {
+                    markedPossibleShaps[inW + 1, inH + 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW + 1, inH + 1]);
+                }
 
-            if (checkPixel(inW - 1, inH + 1))
-            {
-                markedPossibleShaps[inW - 1, inH + 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH + 1]);
-            }
+                if (checkPixel(inW, inH + 1))
+                {
+                    markedPossibleShaps[inW, inH + 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW, inH + 1]);
+                }
 
-            if (checkPixel(inW - 1, inH))
-            {
-                markedPossibleShaps[inW - 1, inH + 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH]);
-            }
+                if (checkPixel(inW - 1, inH + 1))
+                {
+                    markedPossibleShaps[inW - 1, inH + 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW - 1, inH + 1]);
+                }
 
-            if (checkPixel(inW - 1, inH - 1))
-            {
-                markedPossibleShaps[inW - 1, inH - 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW - 1, inH - 1]);
-            }
+                if (checkPixel(inW - 1, inH))
+                {
+                    markedPossibleShaps[inW - 1, inH ].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW - 1, inH]);
+                }
 
-            if (checkPixel(inW , inH - 1))
-            {
-                markedPossibleShaps[inW, inH - 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW , inH - 1]);
-            }
+                if (checkPixel(inW - 1, inH - 1))
+                {
+                    markedPossibleShaps[inW - 1, inH - 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW - 1, inH - 1]);
+                }
 
-            if (checkPixel(inW + 1, inH - 1))
-            {
-                markedPossibleShaps[inW + 1, inH - 1].MARKEDBLUE = true;
-                sQueue.Enqueue(markedPossibleShaps[inW + 1, inH - 1]);
-            }
+                if (checkPixel(inW, inH - 1))
+                {
+                    markedPossibleShaps[inW, inH - 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW, inH - 1]);
+                }
+
+                if (checkPixel(inW + 1, inH - 1))
+                {
+                    markedPossibleShaps[inW + 1, inH - 1].MARKEDBLUE = true;
+                    sQueue.Enqueue(markedPossibleShaps[inW + 1, inH - 1]);
+                }
 
 
         }
 
        //retangle drawer
-        public Bitmap shapeTarRectDrawer(Bitmap inMap)
+        public void shapeTarRectDrawer(Bitmap inMap)
         {
-            Image tempImg = new Bitmap(inMap);
             ShapeLoc currShape = shapeXYminMaxLocs.First();
 
-            Pen drawer = new Pen(System.Drawing.Color.Red, 5);
+            Pen drawer = new Pen(System.Drawing.Color.Blue, 1);
             //Rectangle shapeRectLoc = new Rectangle(topLW, topLH, recWidth, recHeight);
 
             Rectangle shapeRectLoc = new Rectangle(currShape.minW, currShape.minH, currShape.maxW - currShape.minW , currShape.maxH - currShape.minH);
 
-            using (Graphics g = Graphics.FromImage(tempImg))
-            {
-                g.DrawRectangle(drawer, shapeRectLoc);
-            }
-            return new Bitmap(tempImg);
+                using (Graphics g = Graphics.FromImage(inMap))
+                {
+                    g.DrawRectangle(drawer, shapeRectLoc);
+                }
+
+            
         }
 
 
