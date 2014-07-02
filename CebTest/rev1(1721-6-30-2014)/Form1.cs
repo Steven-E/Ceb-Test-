@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ *  Program:    CebTest(Cerberus Test)
+ *  Client:     Visionetic
+ *  @Author:    Steven Etienne
+ *  Purpose:    
+ *              An imaging processing program. Will identify shapes in an image based on difference in RGB pixel channels
+ *              Outlines the image and boxes them in. Outputs results of 1st and 2nd processed image as well as shape co-ordinates
+ *              to file. 
+ *              Allows user to select image of choice.
+ *              Allows user to Zoom/Pan image.
+ *              Allows user to clear existing image.
+ *              
+ * @version: 0.8 7/2/2014
+ */
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -9,9 +24,6 @@ using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.Windows.Forms.VisualStyles;
 using System.IO;
-//using System.Windows.Media;
-
-
 
 
 namespace CebTest
@@ -21,7 +33,8 @@ namespace CebTest
         public Size OrigSize { get; set; }
         public Size TarSize { get; set; }
         private bool dragging = false;
-        private Point start;
+        private Point start = Point.Empty;
+        private Point target = Point.Empty;
         private string imgFLoc;
         private string destFLoc;
         public boardPixel[,] markedPossibleShaps;
@@ -45,23 +58,16 @@ namespace CebTest
             public int HLOC { get { return hLoc; } set { hLoc = value; } }
         }
 
-        public Form1()
-        {
-            InitializeComponent();
-        }
+        public Form1(){ InitializeComponent();}
 
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        
+        private void Form1_Load(object sender, EventArgs e){}
+                
         private void showButton_Click(object sender, EventArgs e)
         {            
             OpenFileDialog openImage = new OpenFileDialog();
             openImage.Filter = "JPEG Files (*.jpeg)|*.jpeg|PNG Files (*.png)|*.png|JPG Files (*.jpg)|*.jpg|GIF Files (*.gif)|*.gif|All Images|*.BMP;*.DIB;*.RLE;*.JPG;*.JPEG;*.JPE;*.JFIF;*.GIF;*.TIF;*.TIFF;*.PNG";
-            //string test = "*.BMP|*.DIB|*.RLE|*.JPG|*.JPEG|*.JPE|*.JFIF|*.GIF|*.TIF|*.TIFF|*.PNG|";
-            openImage.FilterIndex = 2;
+            
+            openImage.FilterIndex = 5;
             DialogResult isGood = openImage.ShowDialog();
 
             if(isGood ==DialogResult.OK)
@@ -88,7 +94,7 @@ namespace CebTest
                 OrigSize = new Size(imgW, imgH);
                 imgFLoc = Path.GetDirectoryName(openImage.FileName);                
             }
-            //initialize list of shape x,y min/max coordinates
+    
             shapeXYminMaxLocs = new List<ShapeLoc>();
             zoomBar.Value = 100;
             zoomUpDown.Value = 100;
@@ -134,7 +140,7 @@ namespace CebTest
             imgFLoc = "";
             destFLoc = "";
             markedPossibleShaps= new boardPixel[0,0];
-            shapeXYminMaxLocs.Clear();
+            if(shapeXYminMaxLocs.Any()){shapeXYminMaxLocs.Clear();}
         }
 
         private void closeButton_Click(object sender, EventArgs e)
@@ -153,34 +159,9 @@ namespace CebTest
             pictureBox1.Image = scaledImg;                       
         }
 
-        private void zoomUpDown_ValueChanged(object sender, EventArgs e){}
+        private void zoomUpDown_ValueChanged(object sender, EventArgs e){}       
 
-        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.Left)
-            {
-                dragging = true;
-                start = e.Location;
-            }
-        }
-
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (dragging)
-            {
-                //Debug.WriteLine("mousemove X: " + e.X + " Y: " + e.Y);
-
-                pictureBox1.Location = new Point(pictureBox1.Left + e.Location.X - start.X,
-                    pictureBox1.Top + e.Location.Y - start.Y);
-            }
-        }
-
-        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
-        {
-            dragging = false;
-        }
-
-        public bool allChanEval() { return (MessageBox.Show("Evaluate by all channels? If no is selected,\n I will evaluate by just red.", "Select channel evaluation:", MessageBoxButtons.YesNo) == DialogResult.Yes); }
+        public bool allChanEval() { return (MessageBox.Show("Evaluate by all channels? If no is selected,\nI will evaluate by just the red channel.", "Select channel evaluation:", MessageBoxButtons.YesNo) == DialogResult.Yes); }
 
         public void preEvalChooses(bool allChn)
         {
@@ -202,21 +183,13 @@ namespace CebTest
 
                     MessageBox.Show("Success!! Image has been processed and stored in folder!", "Alright there!");
                 }
-                else
-                {
-                    MessageBox.Show("No image was selected!\nPlease select an image", "Cannot process!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                else { MessageBox.Show("No image was selected!\nPlease select an image", "Cannot process!", MessageBoxButtons.OK, MessageBoxIcon.Error);}
             }
-            else
-            {
-                MessageBox.Show("Cannot use this thresh-hold value!", "Invalid input!");
-            }
+            else{MessageBox.Show("Cannot use this thresh-hold value!", "Invalid input!");}
         }
 
         private void processImageButton_Click(object sender, EventArgs e)
         {
-            
-
             if (pictureBox1.Image == null)
             {
                 MessageBox.Show("You haven't selected an image yet...", "Hold on there!", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
@@ -235,29 +208,30 @@ namespace CebTest
             }
         }       
 
-        public static Bitmap convr2GrayScale(Bitmap OrigImg) 
-        {
-            Bitmap newTBitmap = new Bitmap(OrigImg.Width, OrigImg.Height);
+        //not currently using this function for anything.. but is here just in case 
+        //public static Bitmap convr2GrayScale(Bitmap OrigImg) 
+        //{
+        //    Bitmap newTBitmap = new Bitmap(OrigImg.Width, OrigImg.Height);
 
-            Graphics newGraphic = Graphics.FromImage(newTBitmap);
+        //    Graphics newGraphic = Graphics.FromImage(newTBitmap);
 
-            ColorMatrix cM = new ColorMatrix(new float[][] {
-                new float[] {.3f, .3f, .3f, 0, 0}, 
-                new float[] {.59f, .59f, .59f, 0, 0},
-                new float[] {.11f, .11f, .11f, 0, 0},
-                new float[] {0, 0, 0, 1, 0},
-                new float[] {0, 0, 0, 0, 1}});
+        //    ColorMatrix cM = new ColorMatrix(new float[][] {
+        //        new float[] {.3f, .3f, .3f, 0, 0}, 
+        //        new float[] {.59f, .59f, .59f, 0, 0},
+        //        new float[] {.11f, .11f, .11f, 0, 0},
+        //        new float[] {0, 0, 0, 1, 0},
+        //        new float[] {0, 0, 0, 0, 1}});
 
-            ImageAttributes atts = new ImageAttributes();
+        //    ImageAttributes atts = new ImageAttributes();
 
-            atts.SetColorMatrix(cM);
+        //    atts.SetColorMatrix(cM);
 
-            newGraphic.DrawImage(OrigImg, new Rectangle(0, 0, OrigImg.Width, OrigImg.Height), 0, 0, OrigImg.Width, OrigImg.Height, GraphicsUnit.Pixel, atts);
+        //    newGraphic.DrawImage(OrigImg, new Rectangle(0, 0, OrigImg.Width, OrigImg.Height), 0, 0, OrigImg.Width, OrigImg.Height, GraphicsUnit.Pixel, atts);
 
-            newGraphic.Dispose();
+        //    newGraphic.Dispose();
 
-            return newTBitmap;        
-        }
+        //    return newTBitmap;        
+        //}
 
         public Bitmap procImage(int threshHoldDiff, Image inImage, bool allChan) 
         {
@@ -574,9 +548,10 @@ namespace CebTest
 
             printSLocsToTextFile();
 
+            int shapeNumber = 1;
             while (shapeXYminMaxLocs.Any()) 
             {
-                shapeTarRectDrawer(pImageTemp);
+                shapeTarRectDrawer(pImageTemp, shapeNumber ++);
                 shapeXYminMaxLocs.RemoveAt(0);
             }
 
@@ -650,18 +625,18 @@ namespace CebTest
         }
 
        //retangle drawer
-        public void shapeTarRectDrawer(Bitmap inMap)
+        public void shapeTarRectDrawer(Bitmap inMap, int sNum)
         {
             ShapeLoc currShape = shapeXYminMaxLocs.First();
 
-            Pen drawer = new Pen(System.Drawing.Color.Blue, 1);
-            
+            Pen drawer = new Pen(System.Drawing.Color.Blue, 1);            
 
             Rectangle shapeRectLoc = new Rectangle(currShape.minW, currShape.minH, currShape.maxW - currShape.minW , currShape.maxH - currShape.minH);
 
             using (Graphics g = Graphics.FromImage(inMap))
             {
                 g.DrawRectangle(drawer, shapeRectLoc);
+                g.DrawString("" + sNum, new Font("Arial", 9), Brushes.Blue, new Point(currShape.minW + 3, currShape.minH + 3));
             }            
         }
 
@@ -691,6 +666,35 @@ namespace CebTest
 
             DirectoryInfo f = Directory.CreateDirectory(destFLoc);
 
+        }
+
+        private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+            dragging = true;
+            //if (e.Button == MouseButtons.Left)
+            start = new Point(e.Location.X - target.X, e.Location.Y - target.Y); 
+        }
+
+        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (dragging)
+            {
+                target = new Point(e.Location.X - start.X, e.Location.Y - start.Y);
+                pictureBox1.Invalidate();
+            }
+           
+        }
+
+        private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+        { dragging = false; }
+
+        private void pictureBox1_Paint(object sender, PaintEventArgs e) 
+        {
+            if (pictureBox1.Image != null)
+            {
+                e.Graphics.Clear(Color.Transparent);
+                e.Graphics.DrawImage(pictureBox1.Image, target);
+            }
         }
 
 

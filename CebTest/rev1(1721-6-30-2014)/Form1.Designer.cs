@@ -52,7 +52,7 @@
             this.tableLayoutPanel1.ColumnCount = 3;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 36.1991F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 63.8009F));
-            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 68F));
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 70F));
             this.tableLayoutPanel1.Controls.Add(this.pictureBox1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.flowLayoutPanel1, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.closeButton, 0, 1);
@@ -74,9 +74,10 @@
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(812, 410);
+            this.pictureBox1.Size = new System.Drawing.Size(810, 410);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
             this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
             this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
             this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
@@ -88,15 +89,15 @@
             this.flowLayoutPanel1.Controls.Add(this.processImageButton);
             this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.flowLayoutPanel1.FlowDirection = System.Windows.Forms.FlowDirection.RightToLeft;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(299, 419);
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(298, 419);
             this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(516, 34);
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(515, 34);
             this.flowLayoutPanel1.TabIndex = 2;
             // 
             // showButton
             // 
             this.showButton.AutoSize = true;
-            this.showButton.Location = new System.Drawing.Point(424, 3);
+            this.showButton.Location = new System.Drawing.Point(423, 3);
             this.showButton.Name = "showButton";
             this.showButton.Size = new System.Drawing.Size(89, 23);
             this.showButton.TabIndex = 0;
@@ -107,7 +108,7 @@
             // clearButton
             // 
             this.clearButton.AutoSize = true;
-            this.clearButton.Location = new System.Drawing.Point(332, 3);
+            this.clearButton.Location = new System.Drawing.Point(331, 3);
             this.clearButton.Name = "clearButton";
             this.clearButton.Size = new System.Drawing.Size(86, 23);
             this.clearButton.TabIndex = 1;
@@ -117,7 +118,7 @@
             // 
             // processImageButton
             // 
-            this.processImageButton.Location = new System.Drawing.Point(214, 3);
+            this.processImageButton.Location = new System.Drawing.Point(213, 3);
             this.processImageButton.Name = "processImageButton";
             this.processImageButton.Size = new System.Drawing.Size(112, 23);
             this.processImageButton.TabIndex = 4;
@@ -142,9 +143,9 @@
             this.flowLayoutPanel2.Controls.Add(this.zoomUpDown);
             this.flowLayoutPanel2.Controls.Add(this.label1);
             this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel2.Location = new System.Drawing.Point(821, 3);
+            this.flowLayoutPanel2.Location = new System.Drawing.Point(819, 3);
             this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-            this.flowLayoutPanel2.Size = new System.Drawing.Size(63, 410);
+            this.flowLayoutPanel2.Size = new System.Drawing.Size(65, 410);
             this.flowLayoutPanel2.TabIndex = 3;
             // 
             // zoomBar
